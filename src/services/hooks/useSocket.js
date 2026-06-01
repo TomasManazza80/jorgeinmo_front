@@ -14,7 +14,7 @@ export function useSocket(token) {
 
     useEffect(() => {
         // If running on localhost but API connected to production, don't connect to socket
-        if (!SOCKET_URL.includes("localhost") && FRONTEND_URL.includes("localhost")) return;
+        if (SOCKET_URL && !SOCKET_URL.includes("localhost") && FRONTEND_URL && FRONTEND_URL.includes("localhost")) return;
         // Initialize the Socket.IO client with the token
         const newSocket = io(SOCKET_URL, {
             auth: {
