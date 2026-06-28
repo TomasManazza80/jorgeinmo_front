@@ -1,13 +1,11 @@
 [build]
-  command = "npm run build"
   publish = "dist"
+  command = "npm run build"
 
-[[headers]]
-  for = "/*.js"
-  [headers.values]
-    Content-Type = "text/javascript"
+[build.environment]
+  NODE_OPTIONS = "--max_old_space_size=4096"
 
-[[headers]]
-  for = "/*.jsx"
-  [headers.values]
-    Content-Type = "text/javascript"
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
