@@ -16,7 +16,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, ...props }, ref) => {
       const currency = useSelector((state: any) => state.authSlice.userInfo.currencyCode) || "ARS";
 
-      const currencySymbol = CurrencySymbol[currency];
+      const currencySymbol = CurrencySymbol[currency] || "$";
 
       const locale = getLang();
 

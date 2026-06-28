@@ -293,7 +293,7 @@ export default function HeroSettings() {
                       <ImageUploader 
                         multiple={false}
                         buttonText="Subir Foto"
-                        onUploadSuccess={(url) => handleSlideChange(index, "imageUrl", url)}
+                        onUploadSuccess={(payload) => handleSlideChange(index, "imageUrl", payload.url || payload)}
                       />
                       <p className="text-xs text-gray-400 mt-4 text-center">
                         Sube una imagen para el fondo de esta diapositiva.

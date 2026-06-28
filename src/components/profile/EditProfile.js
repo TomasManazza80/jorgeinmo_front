@@ -14,7 +14,7 @@ import {dateParser, zodStringPipe} from "../../utils/formatters.js";
 import {userSchema} from "../../utils/formSchemas.js";
 import {RealEstateType} from "../../utils/magicNumbers.js";
 
-const titles = ['-','Mr', 'Mrs', 'Ms', 'Dr', 'Prof'];
+const titles = ['-','Sr.', 'Sra.', 'Srta.', 'Dr.', 'Prof.'];
 
 const EditProfile = ({user}) => {
 

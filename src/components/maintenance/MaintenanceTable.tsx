@@ -103,7 +103,8 @@ const MaintenanceTable = ({ maintenanceReports: initialReports, ...props }) => {
             const headers = {
                 'Authorization': `Bearer ${token}`,
             };
-            const response = await fetch(`https://rentalsappback.onrender.com/maintenance/${id}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:10000";
+            const response = await fetch(`${apiUrl}/maintenance/${id}`, {
                 method: 'DELETE',
                 headers,
             });

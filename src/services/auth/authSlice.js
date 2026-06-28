@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 const initialState = {
-    userInfo: {}, // for user object
-    accessToken: null,
+    userInfo: JSON.parse(localStorage.getItem('userInfo') || '{}'), // for user object
+    accessToken: localStorage.getItem('accessToken') || null,
     error: null,
     success: false, // for monitoring the registration process.
 }
@@ -13,11 +13,26 @@ const authSlice = createSlice({
     reducers: {
         setAccessToken: (state, action) => {
             state.accessToken = action.payload
+            if (action.payload) {
+                localStorage.setItem('accessToken', action.payload)
+            } else {
+                localStorage.removeItem('accessToken')
+            }
         },
         setUser: (state, action) => {
             state.userInfo = action.payload
+            localStorage.setItem('userInfo', JSON.stringify(action.payload))
         },
-        logout: () => initialState,
+        logout: () => {
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('userInfo')
+            return {
+                userInfo: {},
+                accessToken: null,
+                error: null,
+                success: false,
+            }
+        },
     },
 })
 

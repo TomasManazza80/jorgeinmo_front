@@ -87,6 +87,21 @@ export const userApi = authApi.injectEndpoints({
             }),
             invalidatesTags: ['UserList'],
         }),
+        adminUpdateUser: build.mutation({
+            query: ({ id, ...body }) => ({
+                url: `/admin/users/${id}`,
+                method: 'PATCH',
+                body,
+            }),
+            invalidatesTags: ['UserList'],
+        }),
+        adminDeleteUser: build.mutation({
+            query: (id) => ({
+                url: `/admin/users/${id}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['UserList'],
+        }),
     }),
     overrideExisting: false,
 })
@@ -98,4 +113,6 @@ export const {useGetUserQuery,
     useGetAllUsersQuery,
     useAdminCreateUserMutation,
     useUpdateUserRoleMutation,
+    useAdminUpdateUserMutation,
+    useAdminDeleteUserMutation,
 } = userApi;

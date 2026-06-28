@@ -47,7 +47,8 @@ const ImageUploader = ({ onUploadSuccess, buttonText = "Subir Imagen", multiple 
                 }
 
                 if (onUploadSuccess) {
-                    onUploadSuccess(data.url);
+                    // Passed an object with url and fileId to allow deletion
+                    onUploadSuccess({ url: data.url, fileId: data.fileId });
                 }
             }
         } catch (err) {

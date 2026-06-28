@@ -322,6 +322,7 @@ model RealEstateObject {
   marketPrice    Float?          @map("market_price")
   currency       CurrencyCode?   @default(USD)
   images         Image[] // Images of the property
+  tour_3d_url    String?         @map("tour_3d_url")
 
   // location info
   street  String?

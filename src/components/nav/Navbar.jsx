@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { BiSolidRocket } from "react-icons/bi";
 import Header from "./Header.jsx";
 import { Header as PublicHeader } from "../public/header.tsx";
-import img from "../../assets/imgs/logo.png";
+
 import {
     Building2,
     BuildingIcon,
@@ -76,6 +76,12 @@ const items = [
         url: '/users',
         icon: <UsersIcon />,
         section: "MENU"
+    },
+    {
+        title: 'Catálogo GVAmax',
+        url: '/gvamax',
+        icon: <Building2 />,
+        section: "MENU"
     }
 ]
 
@@ -138,21 +144,10 @@ const Navbar = ({ children }) => {
     const NavBar = () => {
         return (
             <div
-                className={"h-[calc(100vh-88px)] top-[88px] flex flex-col justify-between z-40 border-r-2 border-border w-16 md:w-56 bg-background-light rounded-lg fixed "}
+                className={"bottom-0 top-[88px] flex flex-col z-40 border-r-2 border-border w-16 md:w-56 bg-background-light fixed "}
             >
-                <div className="overflow-y-auto h-full pb-24">
-
-                    <h3 className="text-primary font-600 flex flex-row justify-center md:justify-start items-center gap-x-1 pt-4 pb-2 ml-0 md:ml-4 md:pl-2 md:mr-2 text-lg whitespace-nowrap">
-                        <img src={img} alt="Logo" className="w-[40px] h-[40px] md:w-[60px] md:h-[60px] md:ml-[-20px] ml-0 p-0 m-0 object-contain" />
-
-                        <div className="hidden md:flex flex-col gap-0">
-                            <p className="text-card-foreground">Empty Dev</p>
-                            <small className="text-muted-foreground font-400 -mt-1"><a href="">By Tomás Manazza</a></small>
-                        </div>
-                    </h3>
-
-                    <nav
-                        className="hidden md:flex flex-col mt-5 gap-y-2">
+                <div className="flex-1 overflow-y-auto py-5">
+                    <nav className="hidden md:flex flex-col gap-y-2">
                         <p className="text-muted-foreground font-500 mx-2 uppercase">
                             MENÚ
                         </p>
@@ -165,7 +160,6 @@ const Navbar = ({ children }) => {
                                 </Button>
                             )
                             )}
-
                         </div>
 
                         <div className="flex flex-col gap-2 mx-2">
@@ -178,15 +172,7 @@ const Navbar = ({ children }) => {
                             )
                             )}
                         </div>
-
                     </nav>
-
-                    <div className="hidden md:flex flex-col gap-2 mx-2 mt-auto pb-4 absolute bottom-0 w-[calc(100%-1rem)] bg-background-light">
-                        <Button variant="ghost" className="w-full justify-start flex gap-2 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleLogout}>
-                            <LogOutIcon />
-                            Cerrar Sesión
-                        </Button>
-                    </div>
 
                     <nav className="md:hidden flex flex-col justify-center items-center gap-y-1">
                         {getNavItems("MENU").concat(getNavItems("PERSONAL")).map((item, index) => (
@@ -196,11 +182,9 @@ const Navbar = ({ children }) => {
                                 {item.icon}
                             </Button>
                         ))}
-                        <Button variant="ghost" size="icon" className="justify-center items-center text-destructive hover:text-destructive hover:bg-destructive/10 mt-auto" onClick={handleLogout}>
-                            <LogOutIcon />
-                        </Button>
                     </nav>
                 </div>
+
 
             </div>
         )

@@ -59,7 +59,8 @@ const ReporteGanancias = () => {
     const fetchProperties = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('https://rentalsappback.onrender.com/properties', {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+        const response = await axios.get(`${apiUrl}/properties`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProperties(response.data.data || []);
@@ -77,7 +78,8 @@ const ReporteGanancias = () => {
   const fetchServices = async () => {
     setLoadingServices(true);
     try {
-      const response = await axios.get('https://rentalsappback.onrender.com/expenses', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+      const response = await axios.get(`${apiUrl}/expenses`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setServicesList(response.data.data || []);
@@ -92,7 +94,8 @@ const ReporteGanancias = () => {
   const fetchMaintenance = async () => {
     setLoadingMaintenance(true);
     try {
-      const response = await axios.get('https://rentalsappback.onrender.com/maintenance', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:10000';
+      const response = await axios.get(`${apiUrl}/maintenance`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMaintenanceList(response.data.data || []);

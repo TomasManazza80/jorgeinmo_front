@@ -14,97 +14,104 @@ export const CurrencySymbol = {
     "CAD": "C$",
     "CHF": "Fr",
     "CNY": "¥",
+    "ARS": "$",
 }
 
 export const RentalStatus = {
-    "RENTED": "Rented",
-    "VACANT": "Vacant",
-    "OCCUPIED": "Occupied",
-    "UNOCCUPIED": "Unoccupied",
-    "PENDING": "Pending",
-    "UNKNOWN": "Unknown",
+    "RENTED": "Alquilado",
+    "VACANT": "Vacante",
+    "OCCUPIED": "Ocupado",
+    "UNOCCUPIED": "Desocupado",
+    "PENDING": "Pendiente",
+    "UNKNOWN": "Desconocido",
 }
 
 export const CivilStatus = {
-    "SINGLE": "Single",
-    "MARRIED": "Married",
-    "DIVORCED": "Divorced",
-    "WIDOWED": "Widowed",
-    "SEPARATED": "Separated",
-    "OTHER": "Other",
-    "UNKNOWN": "Unknown",
+    "SINGLE": "Soltero/a",
+    "MARRIED": "Casado/a",
+    "DIVORCED": "Divorciado/a",
+    "WIDOWED": "Viudo/a",
+    "SEPARATED": "Separado/a",
+    "OTHER": "Otro",
+    "UNKNOWN": "Desconocido",
 }
 
 export const ListingStatus = {
-    "ACTIVE": "Active",
-    "INACTIVE": "Inactive",
-    "RENTED": "Rented",
-    "NOT_RENTED": "Not Rented",
-    "RESERVED": "Reserved",
-    "SOLD": "Sold",
-    "PENDING": "Pending",
-    "UNKNOWN": "Unknown",
+    "ACTIVE": "Activo",
+    "INACTIVE": "Inactivo",
+    "RENTED": "Alquilado",
+    "NOT_RENTED": "No Alquilado",
+    "RESERVED": "Reservado",
+    "SOLD": "Vendido",
+    "PENDING": "Pendiente",
+    "UNKNOWN": "Desconocido",
 }
 
 export const PaymentStatus = {
-    "PAID": "Paid",
-    "PENDING": "Pending",
-    "REPORTED": "Reported",
-    "CANCELLED": "Cancelled",
-    "REJECTED": "Rejected",
+    "PAID": "Pagado",
+    "PENDING": "Pendiente",
+    "REPORTED": "Reportado",
+    "CANCELLED": "Cancelado",
+    "REJECTED": "Rechazado",
 }
 
 export const MaintenanceStatus = {
-    "REPORTED": "Reported",
-    "IN_PROGRESS": "In Progress",
-    "COMPLETED": "Completed",
-    "OPEN": "Open",
-    "SCHEDULED": "Scheduled",
+    "REPORTED": "Reportado",
+    "IN_PROGRESS": "En Progreso",
+    "COMPLETED": "Completado",
+    "OPEN": "Abierto",
+    "SCHEDULED": "Programado",
 }
 
 export const Priority = {
-    "LOW": "Low",
-    "MEDIUM": "Medium",
-    "HIGH": "High",
-    "CRITICAL": "Critical",
+    "LOW": "Baja",
+    "MEDIUM": "Media",
+    "HIGH": "Alta",
+    "CRITICAL": "Crítica",
 }
 
 export const PaymentScheduleStatus = {
-    "SCHEDULED": "Scheduled",
-    "PAID": "Paid",
-    "PARTIALLY_PAID": "Partially Paid",
-    "OVERDUE": "Overdue",
-    "WAIVED": "Waived",
+    "SCHEDULED": "Programado",
+    "PAID": "Pagado",
+    "PARTIALLY_PAID": "Pago Parcial",
+    "OVERDUE": "Vencido",
+    "WAIVED": "Exonerado",
 }
 
 export const PaymentFrequency = {
-    "MONTHLY": "Monthly",
-    "WEEKLY": "Weekly",
-    "QUARTERLY": "Quarterly",
-    "ANNUALLY": "Annually",
+    "MONTHLY": "Mensual",
+    "WEEKLY": "Semanal",
+    "QUARTERLY": "Trimestral",
+    "ANNUALLY": "Anual",
 }
 
 export const LeaseStatus = {
-    ACTIVE: "Active",
-    EXPIRED: "Expired",
-    TERMINATED: "Terminated",
-    PENDING: "Pending",
+    ACTIVE: "Activo",
+    EXPIRED: "Expirado",
+    TERMINATED: "Terminado",
+    PENDING: "Pendiente",
 }
 
-
-
 export const RealEstateType = {
-    "SINGLE_FAMILY_HOME": "Single Family Home",
-    "MULTI_FAMILY_HOME": "Multi Family Home",
-    "CONDO": "Condo",
-    "APARTMENT": "Apartment",
-    "TOWNHOUSE": "Townhouse",
-    "LUXURY": "Luxury",
-    "OFFICE": "Office",
-    "RETAIL": "Retail",
+    "SINGLE_FAMILY_HOME": "Casa Unifamiliar",
+    "MULTI_FAMILY_HOME": "Casa Multifamiliar",
+    "CONDO": "Condominio",
+    "APARTMENT": "Departamento",
+    "TOWNHOUSE": "Casa Adosada",
+    "LUXURY": "Lujo",
+    "OFFICE": "Oficina",
+    "RETAIL": "Local Comercial",
     "INDUSTRIAL": "Industrial",
-    "LAND": "Land",
-    "FARM": "Farm"
+    "LAND": "Terreno",
+    "FARM": "Finca"
+}
+
+export const RoleNames = {
+    "ADMIN": "Administrador",
+    "USER": "Usuario",
+    "TENANT": "Inquilino",
+    "REALTOR": "Agente",
+    "EMPLOYEE": "Empleado"
 }
 
 

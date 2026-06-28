@@ -51,9 +51,6 @@ const PropertyCreation = () => {
 
     const [unitMultiplicity, setUnitMultiplicity] = useState("single")
 
-    const [imageUrlInput, setImageUrlInput] = useState("")
-    const [unitImageUrlInput, setUnitImageUrlInput] = useState("")
-
 
     const unitMultiplicityOptions = [
         {
@@ -523,31 +520,10 @@ const PropertyCreation = () => {
                                             <ImageUploader 
                                                 multiple={true}
                                                 buttonText="Subir Imágenes"
-                                                onUploadSuccess={(url) => {
-                                                    propertyForm.setValue("images", [...propertyForm.getValues("images"), url])
-                                                    setImageUrlInput(""); // Keep the input clear
+                                                onUploadSuccess={(payload) => {
+                                                    propertyForm.setValue("images", [...propertyForm.getValues("images"), payload])
                                                 }}
                                             />
-                                            <div className="text-sm text-center font-bold my-2 text-gray-500">O ingresa URL manual:</div>
-                                            <div className="flex flex-row gap-2">
-                                                <Input
-                                                    id="images"
-                                                    value={imageUrlInput}
-                                                    onChange={(e) => setImageUrlInput(e.target.value)}
-                                                    placeholder="URL de la imagen"
-                                                />
-                                                <Button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (imageUrlInput && !propertyForm.getValues("images").includes(imageUrlInput)) {
-                                                            propertyForm.setValue("images", [...propertyForm.getValues("images"), imageUrlInput])
-                                                            setImageUrlInput("")
-                                                        }
-                                                    }}
-                                                >
-                                                    Añadir
-                                                </Button>
-                                            </div>
                                         </div>
                                     </div>
                                 </FormItem>
@@ -563,10 +539,22 @@ const PropertyCreation = () => {
                                         {propertyForm.getValues("images").map((image, index) => (
                                             <CarouselItem key={index}>
                                                 <div className="p-1">
-                                                    <img src={image} alt={`Imagen de la Propiedad ${index}`} className="w-full h-64 object-cover rounded-lg"/>
+                                                    <img src={image.url || image} alt={`Imagen de la Propiedad ${index}`} className="w-full h-64 object-cover rounded-lg"/>
                                                 </div>
 
-                                                <Button className="w-full" type="button" variant="outline" onClick={() => {
+                                                <Button className="w-full" type="button" variant="outline" onClick={async () => {
+                                                    const imgToRemove = propertyForm.getValues("images")[index];
+                                                    if (imgToRemove?.fileId) {
+                                                        try {
+                                                            const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+                                                            await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:10000"}/api/upload/${imgToRemove.fileId}`, {
+                                                                method: "DELETE",
+                                                                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                                                            });
+                                                        } catch (err) {
+                                                            console.error("Error eliminando imagen de ImageKit:", err);
+                                                        }
+                                                    }
                                                     propertyForm.setValue("images", propertyForm.getValues("images").filter((_, i) => i !== index))
                                                     propertyForm.trigger("images")
                                                 }}
@@ -795,29 +783,10 @@ const PropertyCreation = () => {
                                             <ImageUploader 
                                                 multiple={true}
                                                 buttonText="Subir Imágenes"
-                                                onUploadSuccess={(url) => {
-                                                    propertyForm.setValue("units[0].images", [...propertyForm.getValues("units[0].images"), url])
-                                                    setUnitImageUrlInput(""); // Keep the input clear
+                                                onUploadSuccess={(payload) => {
+                                                    propertyForm.setValue("units[0].images", [...propertyForm.getValues("units[0].images"), payload])
                                                 }}
                                             />
-                                            <div className="text-sm text-center font-bold my-2 text-gray-500">O ingresa URL manual:</div>
-                                            <div className="flex flex-row gap-2">
-                                                <Input
-                                                    id="unitImages"
-                                                    value={unitImageUrlInput}
-                                                    onChange={(e) => setUnitImageUrlInput(e.target.value)}
-                                                    placeholder="URL de la imagen de la unidad"
-                                                />
-                                                <Button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (unitImageUrlInput && !propertyForm.getValues("units[0].images").includes(unitImageUrlInput)) {
-                                                            propertyForm.setValue("units[0].images", [...propertyForm.getValues("units[0].images"), unitImageUrlInput])
-                                                            setUnitImageUrlInput("")
-                                                        }
-                                                    }}
-                                                >Añadir</Button>
-                                            </div>
                                         </div>
                                     </div>
                                 </FormItem>
@@ -833,11 +802,23 @@ const PropertyCreation = () => {
         {propertyForm.getValues("units[0].images").map((image, index) => (
             <CarouselItem key={index}>
                 <div className="p-1">
-                    <img src={image} alt={`Imagen de la Propiedad ${index}`} className="w-full h-64 object-cover rounded-lg"/>
+                    <img src={image.url || image} alt={`Imagen de la Propiedad ${index}`} className="w-full h-64 object-cover rounded-lg"/>
                 </div>
 
                 <div className="flex gap-2">
-                    <Button className="w-full" type="button" variant="outline" onClick={() => {
+                    <Button className="w-full" type="button" variant="outline" onClick={async () => {
+                        const imgToRemove = propertyForm.getValues("units[0].images")[index];
+                        if (imgToRemove?.fileId) {
+                            try {
+                                const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+                                await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:10000"}/api/upload/${imgToRemove.fileId}`, {
+                                    method: "DELETE",
+                                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                                });
+                            } catch (err) {
+                                console.error("Error eliminando imagen de ImageKit:", err);
+                            }
+                        }
                         propertyForm.setValue("units[0].images", propertyForm.getValues("units[0].images").filter((_, i) => i !== index))
                         propertyForm.trigger("units[0].images")
                     }}>

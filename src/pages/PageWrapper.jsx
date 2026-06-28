@@ -16,7 +16,7 @@ const PageWrapper = (props) => {
     if (isLoading) {
         return (
             <div className='flex space-x-2 ml-4 mt-4 bg-background-light h-screen'>
-                <span className='sr-only'>Loading...</span>
+                <span className='sr-only'>Cargando...</span>
                 <div className='h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]'></div>
                 <div className='h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]'></div>
                 <div className='h-2 w-2 bg-primary rounded-full animate-bounce'></div>

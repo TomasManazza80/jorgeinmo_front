@@ -1,74 +1,117 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { MapPin, Bath, BedDouble, Maximize, Check, ChevronLeft } from "lucide-react";
+import { MapPin, Bath, BedDouble, Maximize, Check, ChevronLeft, ChevronRight, X, ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PropertyMap } from "./property-map";
 import { Header } from "./header";
 import { Footer } from "./footer";
+import { VirtualTourViewer } from "./VirtualTourViewer";
 
 export default function PropertyDetailPublic() {
   const { id } = useParams();
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  
+  // Gallery state
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   useEffect(() => {
     const fetchProperty = async () => {
       try {
         const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:10000";
-        const res = await fetch(`${apiUrl}/api/public/properties/${id}`);
+        const res = await fetch(`${apiUrl}/api/gvamax/inmuebles`);
         const json = await res.json();
         
-        if (json.data) {
-          const p = json.data;
-          const hasRentalUnit = p.units?.some((u) => u.rentalPrice && u.rentalPrice > 0);
-          const type = hasRentalUnit ? "Alquiler" : "Venta";
-          
-          let price = "Consultar";
-          if (type === "Venta" && p.marketPrice) {
-            price = `${p.currency || 'USD'} ${p.marketPrice.toLocaleString()}`;
-          } else if (type === "Alquiler") {
-            const rentalUnit = p.units?.find((u) => u.rentalPrice && u.rentalPrice > 0);
-            if (rentalUnit) {
-               price = `${rentalUnit.currency || 'USD'} ${rentalUnit.rentalPrice.toLocaleString()} / mes`;
+        const data = json.propiedades || json.inmuebles || json.data || (Array.isArray(json) ? json : []);
+        const p = data.find((prop) => String(prop.id) === String(id));
+
+        if (p) {
+          const type = p.tipoOperacion || "Venta";
+          let price = p.precio || "Consultar";
+          const beds = p.dormitorios || 0;
+          const baths = p.banos || 0;
+          const sqft = p.superficies?.metrosCubiertos || p.superficies?.metrosTerreno || 0;
+          const propertyType = p.tipoInmueble || "Propiedad";
+
+          let tour_3d_url = null;
+          try {
+            // 1. Try to see if there is an external URL text file (for Luma AI or other links)
+            const urlTxtRes = await fetch(`${apiUrl}/uploads/3d-models/${id}.url.txt`);
+            if (urlTxtRes.ok) {
+              const urlText = await urlTxtRes.text();
+              tour_3d_url = urlText.trim();
+            } else {
+              // 2. Try to see if the file exists directly (e.g. from GVAmax uploads)
+              const directUrl = `${apiUrl}/uploads/3d-models/${id}.glb`;
+              const headRes = await fetch(directUrl, { method: 'HEAD' });
+              if (headRes.ok) {
+                tour_3d_url = directUrl;
+              } else {
+                // 3. Fallback to DB check
+                const localRes = await fetch(`${apiUrl}/api/public/properties/${id}`);
+                if (localRes.ok) {
+                  const localData = await localRes.json();
+                  if (localData.data) {
+                    const dbUrl = localData.data.tour_3d_url || localData.data.metareal_url;
+                    if (dbUrl) {
+                      if (dbUrl.trim().startsWith('<iframe')) {
+                        tour_3d_url = dbUrl;
+                      } else {
+                        tour_3d_url = dbUrl.startsWith('http') ? dbUrl : `${apiUrl}${dbUrl}`;
+                      }
+                    }
+                  }
+                }
+              }
             }
+          } catch (err) {
+            console.error("Error fetching 3D tour", err);
           }
 
-          const beds = p.units?.reduce((acc, u) => acc + (u.numOfBedrooms || 0), 0) || 0;
-          const baths = p.units?.reduce((acc, u) => acc + (u.numOfBathrooms || 0), 0) || 0;
-          const sqft = p.units?.reduce((acc, u) => acc + (u.unitSize || 0), 0) || p.lotSize || 0;
+          const images = [];
+          if (p.media?.images) {
+            Object.values(p.media.images).forEach(img => images.push(img));
+          } else if (p.imagenPortada) {
+            images.push(p.imagenPortada);
+          }
 
-          const typeMap = {
-            SINGLE_FAMILY_HOME: "Casa",
-            MULTI_FAMILY_HOME: "Casa Multifamiliar",
-            CONDO: "Condominio",
-            APARTMENT: "Departamento",
-            TOWNHOUSE: "Townhouse",
-            LUXURY: "Lujo",
-            OFFICE: "Oficina",
-            RETAIL: "Local Comercial",
-            INDUSTRIAL: "Industrial",
-            LAND: "Terreno",
-            FARM: "Granja"
-          };
-          const propertyType = typeMap[p.realEstateType] || "Propiedad";
+          const addressParts = [];
+          if (p.ubicacion?.calle) addressParts.push(p.ubicacion.calle);
+          if (p.ubicacion?.numero) addressParts.push(p.ubicacion.numero);
+          if (p.ubicacion?.localidad) addressParts.push(p.ubicacion.localidad);
+
+          let description = p.descripcion || "";
+          if (typeof description === "string") {
+            description = description.replace(/<[^>]*>?/gm, '');
+          }
+
+          let lat, lng;
+          if (p.ubicacion?.coordenadas) {
+            const parts = p.ubicacion.coordenadas.split(',');
+            if (parts.length === 2) {
+              lat = parseFloat(parts[0].trim());
+              lng = parseFloat(parts[1].trim());
+            }
+          }
 
           setProperty({
             id: p.id,
             type,
             propertyType,
-            title: p.title || "Propiedad sin título",
+            title: p.tituloComercial || "Propiedad sin título",
             price,
-            address: [p.street, p.city].filter(Boolean).join(", ") || "Ubicación a consultar",
-            description: p.description || "",
+            address: addressParts.join(" ") || "Ubicación a consultar",
+            description,
             beds,
             baths,
             sqft,
-            images: p.images?.map((img) => img.imageUrl) || [],
-            amenities: p.amenities?.map((a) => a.amenity.name) || [],
-            latitude: p.latitude,
-            longitude: p.longitude,
+            images,
+            amenities: [],
+            latitude: lat,
+            longitude: lng,
+            tour_3d_url,
           });
         }
       } catch (e) {
@@ -79,6 +122,27 @@ export default function PropertyDetailPublic() {
     };
     fetchProperty();
   }, [id]);
+
+  const openGallery = (index) => {
+    setSelectedImageIndex(index);
+    setIsGalleryOpen(true);
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+  };
+
+  const closeGallery = () => {
+    setIsGalleryOpen(false);
+    document.body.style.overflow = 'auto';
+  };
+
+  const nextImage = (e) => {
+    e.stopPropagation();
+    setSelectedImageIndex((prev) => (prev + 1) % property.images.length);
+  };
+
+  const prevImage = (e) => {
+    e.stopPropagation();
+    setSelectedImageIndex((prev) => (prev - 1 + property.images.length) % property.images.length);
+  };
 
   if (loading) {
     return (
@@ -108,8 +172,9 @@ export default function PropertyDetailPublic() {
   }
 
   return (
-    <div className="theme-public min-h-screen bg-black text-zinc-300 font-sans pb-24 pt-28">
+    <div className="theme-public min-h-screen bg-black text-zinc-300 font-sans pb-24 pt-28 relative">
       <Header />
+      
       {/* HEADER SECTION */}
       <div className="container mx-auto px-6 pt-12 pb-8 max-w-6xl">
         <Link to="/" className="inline-flex items-center text-zinc-400 hover:text-white transition-colors mb-8 text-sm">
@@ -141,14 +206,83 @@ export default function PropertyDetailPublic() {
           </div>
         </div>
 
-        {/* HERO IMAGE */}
-        <div className="w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden mb-12">
-          <img 
-            src={property.images[0] || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80"} 
-            alt={property.title}
-            className="w-full h-full object-cover"
-          />
+        {/* ELEGANT PHOTO GRID */}
+        <div className="w-full h-[350px] md:h-[500px] flex gap-2 mb-12 relative rounded-2xl overflow-hidden group/grid">
+          {/* Main Large Image */}
+          <div 
+            className="w-full md:w-1/2 h-full relative cursor-pointer overflow-hidden group/main"
+            onClick={() => openGallery(0)}
+          >
+            <img 
+              src={property.images[0] || "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80"} 
+              alt={property.title}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover/main:scale-105"
+            />
+            <div className="absolute inset-0 bg-black/10 group-hover/main:bg-transparent transition-colors duration-300"></div>
+          </div>
+
+          {/* 4 Small Images Grid (Only visible on md+ if there are enough images) */}
+          {property.images.length > 1 && (
+            <div className="hidden md:grid grid-cols-2 grid-rows-2 gap-2 w-1/2 h-full">
+              {property.images.slice(1, 5).map((img, idx) => (
+                <div 
+                  key={idx} 
+                  className="relative w-full h-full cursor-pointer overflow-hidden group/sub"
+                  onClick={() => openGallery(idx + 1)}
+                >
+                  <img 
+                    src={img} 
+                    alt={`${property.title} - foto ${idx + 2}`} 
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover/sub:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/10 group-hover/sub:bg-transparent transition-colors duration-300"></div>
+                  
+                  {/* Overlay for the 5th image if more exist */}
+                  {idx === 3 && property.images.length > 5 && (
+                    <div className="absolute inset-0 bg-black/50 hover:bg-black/40 transition-colors flex items-center justify-center">
+                      <span className="text-white font-medium text-lg">+{property.images.length - 5} Fotos</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* View All Photos Button */}
+          <Button 
+            onClick={() => openGallery(0)} 
+            variant="secondary"
+            className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-black font-medium gap-2 shadow-lg backdrop-blur-sm border-none z-10"
+          >
+            <ImageIcon size={16} />
+            Ver todas las fotos
+          </Button>
         </div>
+
+        {/* RECORRIDO VIRTUAL / 3D TOUR */}
+        {(property.tour_3d_url || property.metareal_url) && (
+          <div className="w-full mb-12">
+            <h2 className="text-2xl font-serif text-[#C7A15E] mb-6">Recorrido Virtual</h2>
+            <div className="rounded-2xl overflow-hidden border border-zinc-800/50">
+              {property.tour_3d_url && property.tour_3d_url.includes('<iframe') ? (
+                <div 
+                  className="w-full [&>iframe]:w-full [&>iframe]:h-[600px] [&>iframe]:border-0"
+                  dangerouslySetInnerHTML={{ __html: property.tour_3d_url }} 
+                />
+              ) : property.tour_3d_url ? (
+                <iframe
+                  src={property.tour_3d_url}
+                  width="100%"
+                  height="600"
+                  frameBorder="0"
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <VirtualTourViewer url={property.metareal_url} />
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* LEFT CONTENT */}
@@ -183,6 +317,8 @@ export default function PropertyDetailPublic() {
                 </div>
               </div>
             </section>
+
+
 
             {/* AMENITIES */}
             {property.amenities.length > 0 && (
@@ -256,6 +392,62 @@ export default function PropertyDetailPublic() {
         </div>
       </div>
       <Footer />
+
+      {/* FULLSCREEN GALLERY MODAL */}
+      {isGalleryOpen && (
+        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col backdrop-blur-md transition-opacity duration-300">
+          <div className="flex justify-between items-center p-6 text-white absolute top-0 left-0 right-0 z-10">
+            <span className="text-zinc-400 font-medium tracking-widest text-sm">
+              {selectedImageIndex + 1} / {property.images.length}
+            </span>
+            <button 
+              onClick={closeGallery} 
+              className="p-3 bg-zinc-900/50 hover:bg-[#C7A15E] hover:text-black rounded-full transition-colors backdrop-blur-sm"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          
+          <div className="flex-1 flex items-center justify-center relative w-full h-full" onClick={closeGallery}>
+            <button 
+              onClick={prevImage} 
+              className="absolute left-4 md:left-8 p-3 md:p-4 bg-zinc-900/50 hover:bg-[#C7A15E] hover:text-black rounded-full text-white transition-all z-10 backdrop-blur-sm"
+            >
+              <ChevronLeft size={28} />
+            </button>
+            
+            <img 
+              key={selectedImageIndex}
+              src={property.images[selectedImageIndex]} 
+              className="max-h-[85vh] max-w-[85vw] object-contain select-none transition-opacity duration-300" 
+              alt={`Vista ampliada ${selectedImageIndex + 1}`} 
+              onClick={(e) => e.stopPropagation()}
+            />
+            
+            <button 
+              onClick={nextImage} 
+              className="absolute right-4 md:right-8 p-3 md:p-4 bg-zinc-900/50 hover:bg-[#C7A15E] hover:text-black rounded-full text-white transition-all z-10 backdrop-blur-sm"
+            >
+              <ChevronRight size={28} />
+            </button>
+          </div>
+
+          {/* Thumbnails */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 flex justify-center gap-3 overflow-x-auto bg-gradient-to-t from-black/80 to-transparent">
+            {property.images.map((img, idx) => (
+              <button 
+                key={idx}
+                onClick={() => setSelectedImageIndex(idx)}
+                className={`h-16 w-24 flex-shrink-0 rounded-md overflow-hidden transition-all duration-300 ${
+                  idx === selectedImageIndex ? 'ring-2 ring-[#C7A15E] scale-110 opacity-100' : 'opacity-50 hover:opacity-100'
+                }`}
+              >
+                <img src={img} className="w-full h-full object-cover" alt={`Miniatura ${idx + 1}`} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

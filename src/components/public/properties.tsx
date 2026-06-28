@@ -20,56 +20,66 @@ export function Properties() {
     const fetchProperties = async () => {
       try {
         const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:10000";
-        const res = await fetch(`${apiUrl}/api/public/properties`);
+        const res = await fetch(`${apiUrl}/api/gvamax/inmuebles`);
         const json = await res.json();
         
-        const mapped = (json.data || []).map((p: any) => {
-          const hasRentalUnit = p.units?.some((u: any) => u.rentalPrice && u.rentalPrice > 0);
-          const type = hasRentalUnit ? "Alquiler" : "Venta";
+        const data = json.propiedades || json.inmuebles || json.data || (Array.isArray(json) ? json : []);
+
+        const mapped = data.map((p: any) => {
+          const type = p.tipoOperacion || "Venta";
           
-          let price = "Consultar";
-          if (type === "Venta" && p.marketPrice) {
-            price = `${p.currency || 'USD'} ${p.marketPrice.toLocaleString()}`;
-          } else if (type === "Alquiler") {
-            const rentalUnit = p.units?.find((u: any) => u.rentalPrice && u.rentalPrice > 0);
-            if (rentalUnit) {
-               price = `${rentalUnit.currency || 'USD'} ${rentalUnit.rentalPrice.toLocaleString()} / mes`;
-            }
+          let price = p.precio || "Consultar";
+
+          const beds = p.dormitorios || 0;
+          const baths = p.banos || 0;
+          const sqft = p.superficies?.metrosCubiertos || p.superficies?.metrosTerreno || 0;
+
+          const propertyType = p.tipoInmueble || "Propiedad";
+
+          const images = [];
+          if (p.media?.images) {
+            Object.values(p.media.images).forEach(img => images.push(img));
+          } else if (p.imagenPortada) {
+            images.push(p.imagenPortada);
           }
 
-          const beds = p.units?.reduce((acc: number, u: any) => acc + (u.numOfBedrooms || 0), 0) || 0;
-          const baths = p.units?.reduce((acc: number, u: any) => acc + (u.numOfBathrooms || 0), 0) || 0;
-          const sqft = p.units?.reduce((acc: number, u: any) => acc + (u.unitSize || 0), 0) || p.lotSize || 0;
+          const addressParts = [];
+          if (p.ubicacion?.calle) addressParts.push(p.ubicacion.calle);
+          if (p.ubicacion?.numero) addressParts.push(p.ubicacion.numero);
+          if (p.ubicacion?.localidad) addressParts.push(p.ubicacion.localidad);
 
-          const typeMap: any = {
-            SINGLE_FAMILY_HOME: "Casa",
-            MULTI_FAMILY_HOME: "Casa Multifamiliar",
-            CONDO: "Condominio",
-            APARTMENT: "Departamento",
-            TOWNHOUSE: "Townhouse",
-            LUXURY: "Lujo",
-            OFFICE: "Oficina",
-            RETAIL: "Local Comercial",
-            INDUSTRIAL: "Industrial",
-            LAND: "Terreno",
-            FARM: "Granja"
-          };
-          const propertyType = typeMap[p.realEstateType] || "Propiedad";
+          // Strip HTML from description if any
+          let description = p.descripcion || "";
+          if (typeof description === "string") {
+            description = description.replace(/<[^>]*>?/gm, '');
+          }
+
+          let lat, lng;
+          if (p.ubicacion?.coordenadas) {
+            const parts = p.ubicacion.coordenadas.split(',');
+            if (parts.length === 2) {
+              lat = parseFloat(parts[0].trim());
+              lng = parseFloat(parts[1].trim());
+            }
+          }
 
           return {
             id: p.id,
             type,
             propertyType,
-            title: p.title || "Propiedad sin título",
+            title: p.tituloComercial || "Propiedad sin título",
             price,
-            address: [p.street, p.city].filter(Boolean).join(", ") || "Ubicación a consultar",
-            description: p.description || "",
+            address: addressParts.join(" ") || "Ubicación a consultar",
+            description,
             beds,
             baths,
             sqft,
-            images: p.images?.map((img: any) => img.imageUrl) || []
+            images,
+            latitude: lat,
+            longitude: lng
           }
         });
+        console.log("Mapped properties:", mapped);
         setProperties(mapped);
       } catch (e) {
         console.error("Error fetching properties", e);

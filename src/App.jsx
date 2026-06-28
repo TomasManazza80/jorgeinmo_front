@@ -33,6 +33,7 @@ import PublicLanding from "./pages/public/PublicLanding.jsx";
 import PropertyDetailPublic from "./components/public/PropertyDetailPublic.jsx";
 import PublicCatalog from "./components/public/PublicCatalog.jsx";
 import HeroSettings from "./pages/admin/HeroSettings.jsx";
+import GVAmaxCatalog from "./pages/admin/GVAmaxCatalog.jsx";
 
 
 
@@ -87,7 +88,7 @@ const AppContent = () => {
                         <Route path="/maintenance" element={<MaintenancePage/>}/>
                         <Route path="/reporte" element={<ReporteGanancias/>}/>
                         <Route path="/users" element={<UserManagementPage/>}/>
-
+                        <Route path="/gvamax" element={<GVAmaxCatalog/>}/>
 
                     </Routes>
                 </Navbar>)}

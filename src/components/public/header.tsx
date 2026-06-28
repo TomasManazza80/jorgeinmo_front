@@ -104,14 +104,7 @@ export function Header({ alwaysSolid = false }) {
               {link.label}
             </Link>
           ))}
-          {authSlice?.accessToken && (
-            <button
-              onClick={handleLogout}
-              className="text-sm font-medium text-white/80 hover:text-white transition-colors duration-300 tracking-wide"
-            >
-              Cerrar Sesión
-            </button>
-          )}
+
           <Button
             asChild
             className="bg-[#C7A15E] hover:bg-[#b8923f] text-black font-medium px-6 py-2 rounded-none transition-all duration-300"
@@ -146,17 +139,7 @@ export function Header({ alwaysSolid = false }) {
               {link.label}
             </Link>
           ))}
-          {authSlice?.accessToken && (
-            <button
-              onClick={() => {
-                handleLogout()
-                setIsMobileMenuOpen(false)
-              }}
-              className="text-xl font-medium text-white/80 hover:text-white transition-colors duration-300 tracking-wide"
-            >
-              Cerrar Sesión
-            </button>
-          )}
+
           <Button
             asChild
             className="bg-[#C7A15E] hover:bg-[#b8923f] text-black font-medium px-8 py-3 rounded-none transition-all duration-300 mt-4"
