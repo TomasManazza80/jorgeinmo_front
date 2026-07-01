@@ -34,17 +34,21 @@ import {
 } from "../../components/ui/dialog.tsx";
 import UnitCreationTable from "../../components/properties/UnitCreationTable.js";
 import {useCreatePropertyMutation} from "../../services/api/propertyApi.js";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {Progress} from "../../components/ui/multi-step.js";
 import {toast} from "sonner";
 import ImageUploader from "../../components/ui/ImageUploader.jsx";
 
 
 const PropertyCreation = () => {
+    const { id } = useParams();
+    const isEditMode = Boolean(id);
 
     const navigate = useNavigate();
 
     const [createProperty, {isLoading: isCreating}] = useCreatePropertyMutation();
+    const [updateProperty, {isLoading: isUpdating}] = useUpdatePropertyMutation();
+    const { data: propertyData, isLoading: isLoadingProperty } = useGetPropertyQuery(id, { skip: !isEditMode });
 
 
     const [tab, setTab] = useState(1)
@@ -98,7 +102,63 @@ const PropertyCreation = () => {
                 }
             ]
         },
+        mode: "onChange"
     }))
+
+    useEffect(() => {
+        if (isEditMode && propertyData?.data) {
+            const data = propertyData.data;
+            propertyForm.reset({
+                title: data.title || "",
+                description: data.description || "",
+                lotSize: data.lotSize || "",
+                yearBuilt: data.yearBuilt || "",
+                realEstateType: data.realEstateType || "",
+                marketPrice: data.marketPrice || "",
+                street: data.street || "",
+                city: data.city || "",
+                state: data.state || "",
+                zip: data.zip || "",
+                country: data.country || "",
+                publishToPortals: data.publishToPortals || false,
+                gvamx: data.gvamx_enabled || false,
+                zonaprop: data.zonaprop_enabled || false,
+                argenprop: data.argenprop_enabled || false,
+                images: data.images ? data.images.map(img => ({ url: img.imageUrl, fileId: img.fileId })) : [],
+                units: data.units && data.units.length > 0 ? data.units.map(unit => ({
+                    id: unit.id, // For update
+                    unitNumber: unit.unitNumber || "",
+                    floor: unit.floor || "",
+                    unitSize: unit.unitSize || "",
+                    numOfFloors: unit.numOfFloors || "",
+                    numOfRooms: unit.numOfRooms || "",
+                    numOfBedrooms: unit.numOfBedrooms || "",
+                    numOfBathrooms: unit.numOfBathrooms || "",
+                    garages: unit.garages || "",
+                    status: unit.status || "ACTIVE",
+                    rentalPrice: unit.rentalPrice || "",
+                    images: unit.images ? unit.images.map(img => ({ url: img.imageUrl, fileId: img.fileId })) : []
+                })) : [
+                    {
+                        unitNumber: "",
+                        floor: "",
+                        unitSize: "",
+                        numOfFloors: "",
+                        numOfRooms: "",
+                        numOfBedrooms: "",
+                        numOfBathrooms: "",
+                        garages: "",
+                        status: "ACTIVE",
+                        rentalPrice: "",
+                        images: []
+                    }
+                ]
+            });
+            if (data.units && data.units.length > 1) {
+                setUnitMultiplicity("multiple");
+            }
+        }
+    }, [isEditMode, propertyData, propertyForm]);
 
     const [tabStates, setTabStates] = useState([
         {
@@ -121,30 +181,13 @@ const PropertyCreation = () => {
         }
     ])
 
-    useEffect(() => {
-        if (propertyForm.formState.isValid){
-            setTabStates(tabStates.map((tab, index) => {
-                if (index === 0 || index === 1){
-                    return {...tab, status: "complete"}
-                }
-                return tab
-            }))
-        }
-        else {
-            setTabStates(tabStates.map((tab, index) => {
-                if (index === 0 || index === 1){
-                    return {...tab, status: "incomplete"}
-                }
-                return tab
-            }))
-        }
-    }, [propertyForm.formState.isValid])
+// useEffect removido para evitar que isValid bloquee el avance del primer tab
 
 
     const onSubmit = (data) => {
         const mappedUnits = data.units.map(unit => {
-            const {images, ...rest} = unit;
-            return rest;
+            // Keep images in units since backend handles them now
+            return unit;
         })
 
         if (unitMultiplicity === "single"){
@@ -153,20 +196,28 @@ const PropertyCreation = () => {
 
         const body = {
             ...data,
-            images: data.images.map(image => ({imageUrl: image})),
+            images: data.images,
             units: mappedUnits
         }
         delete body.publishToPortals;
 
-        createProperty(body).then((res) => {
-            if (res.error){
-                console.log(res.error)
-                return;
-            }
-            else {
+        if (isEditMode) {
+            updateProperty({ id, ...body }).then((res) => {
+                if (res.error) {
+                    console.log(res.error)
+                    return;
+                }
                 navigate("/properties")
-            }
-        })
+            })
+        } else {
+            createProperty(body).then((res) => {
+                if (res.error){
+                    console.log(res.error)
+                    return;
+                }
+                navigate("/properties")
+            })
+        }
     }
 
     
@@ -202,7 +253,7 @@ const PropertyCreation = () => {
     return (
         <div className="flex flex-col gap-2 relative mb-16">
             <h1>
-                Crear Propiedad
+                {isEditMode ? "Editar Propiedad" : "Crear Propiedad"}
             </h1>
 
             <div className="flex flex-row justify-between overflow-auto mb-4">
@@ -936,24 +987,24 @@ const PropertyCreation = () => {
                     type={tab === 3 ? "submit" : "button"}
                     variant="outline"
                     isLoading={isCreating}
-                    onClick={() => {
-                    propertyForm.trigger();
-                    if (tab === 2 && propertyForm.formState.isValid){
-                        // set tab 2 to complete
-                        setTabStates(tabStates.map((tab, index) => {
-                            if (index === 1){
-                                return {...tab, status: "complete"}
-                            }
-                            return tab
-                        }))
-                        setTab(3)
-                        return;
-                    }
-
-                    if (tab === 3){
-                        propertyForm.handleSubmit(onSubmit)()
-                    } else if (tabStates[tab - 1].status === "complete"){
-                        setTab(tab + 1)
+                    onClick={async () => {
+                    if (tab === 1) {
+                        const isStep1Valid = await propertyForm.trigger([
+                            "title", "realEstateType", "description", "lotSize", "marketPrice", 
+                            "yearBuilt", "street", "zip", "city", "state", "country", "images"
+                        ]);
+                        if (isStep1Valid) {
+                            setTabStates(tabStates.map((t, idx) => idx === 0 ? {...t, status: "complete"} : t));
+                            setTab(2);
+                        }
+                    } else if (tab === 2) {
+                        const isStep2Valid = await propertyForm.trigger(["units"]);
+                        if (isStep2Valid) {
+                            setTabStates(tabStates.map((t, idx) => idx === 1 ? {...t, status: "complete"} : t));
+                            setTab(3);
+                        }
+                    } else if (tab === 3) {
+                        propertyForm.handleSubmit(onSubmit)();
                     }
                 }}
                 >

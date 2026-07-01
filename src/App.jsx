@@ -73,9 +73,10 @@ const AppContent = () => {
                         <Route path="/account"  element={<AccountPage/>} />
                         <Route path="/settings"  element={<AccountPage/>} />
                         <Route path="/admin/hero-settings" element={<HeroSettings/>} />
-                        <Route path="/properties/create" element={<PropertyCreationPage/>} />
-                        <Route path="/properties/:id" element={<PropertyDetailPage/>} />
                         <Route path="/properties" element={<PropertiesPage/>} />
+                        <Route path="/properties/create" element={<PropertyCreationPage/>} />
+                        <Route path="/properties/edit/:id" element={<PropertyCreationPage/>} />
+                        <Route path="/properties/:id" element={<PropertyDetailPage/>} />
                         <Route path="/tenants" element={<TenantsPage/>} />
                         <Route path="/tenants/create" element={<TenantCreationPage/>} />
                         <Route path="/tenants/:id" element={<TenantProfilePage/>} />

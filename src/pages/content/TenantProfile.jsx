@@ -19,13 +19,26 @@ import {useState} from "react";
 import {Alert, AlertDescription, AlertTitle} from "../../components/ui/alert.tsx";
 import {AiFillWarning} from "react-icons/ai";
 import MaintenanceTable from "../../components/maintenance/MaintenanceTable.tsx";
+import {useAssignTenantMutation, useGetUnitsQuery} from "../../services/api/unitApi.js";
+import RentalSelection from "../../components/comboboxes/RentalSelection.js";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from "../../components/ui/dialog.tsx";
 
 
 const TenantProfile = (props) => {
 
     const tenant = props?.data?.data;
 
-    const currentUnitId = tenant?.unit?.find((unit) => unit?.tenantId === tenant?.id)?.id;
+    const hasAssignedUnit = tenant?.units?.length > 0;
+    
+    // Check if we have an assigned unit directly from the tenant object
+    const currentUnitId = tenant?.units?.[0]?.id;
 
     const currentUnit = useSelector((state) => selectUnitById(state, currentUnitId));
 
@@ -34,6 +47,10 @@ const TenantProfile = (props) => {
     const leases = useSelector((state) => selectLeasesByTenantId(state, tenant?.id));
 
     const [showLeaseModal, setShowLeaseModal] = useState(false);
+    
+    const [assignTenant, {isLoading: isAssigning}] = useAssignTenantMutation();
+    const {data: units} = useGetUnitsQuery();
+    const [selectedUnit, setSelectedUnit] = useState(null);
 
 
     const displayTenantInformation = () => {
@@ -82,15 +99,51 @@ const TenantProfile = (props) => {
 
     return (
         <div className="">
-            <Alert variant="destructive" className="mb-2" hidden={currentUnit}>
-                <AiFillWarning/>
-                <AlertTitle>
-                    Inquilino No Asignado a Unidad
-                </AlertTitle>
-                <AlertDescription>
-                    Este inquilino no ha sido asignado a una unidad y algunas funciones podrían no estar disponibles. Si desea asignar este inquilino a una unidad, puede hacerlo en la página de la unidad de alquiler.
-                </AlertDescription>
+            {!hasAssignedUnit && (
+                <Alert variant="destructive" className="mb-2 flex flex-col sm:flex-row justify-between items-center">
+                <div>
+                    <div className="flex items-center gap-2">
+                        <AiFillWarning/>
+                        <AlertTitle className="m-0">
+                            Inquilino No Asignado a Unidad
+                        </AlertTitle>
+                    </div>
+                    <AlertDescription className="mt-1">
+                        Este inquilino no ha sido asignado a una unidad. Para aprovechar todas las funciones, asígnele una.
+                    </AlertDescription>
+                </div>
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="mt-4 sm:mt-0 whitespace-nowrap text-black hover:bg-gray-100 bg-white border-transparent">
+                            Asignar Propiedad
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Asignar Inquilino a Propiedad</DialogTitle>
+                            <DialogDescription>Seleccione la propiedad o unidad que ocupará este inquilino.</DialogDescription>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-4 py-4">
+                            <RentalSelection
+                                units={units?.data || units || []}
+                                selected={selectedUnit}
+                                onSelect={setSelectedUnit}
+                                className="w-full"
+                            />
+                            <Button 
+                                disabled={!selectedUnit}
+                                isLoading={isAssigning}
+                                onClick={() => {
+                                    assignTenant({ unitId: selectedUnit, tenantId: tenant?.id })
+                                }}
+                            >
+                                Confirmar Asignación
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </Alert>
+            )}
             <div className="relative w-full h-[21rem] lg:h-36 ">
                 <Image src={currentUnit?.images[0]?.imageUrl || property?.images[0]?.imageUrl} alt="House" className="w-full h-64 object-cover absolute z-10 rounded-sm"/>
                 <div className="absolute min-w-fit z-20 left-0 right-0 top-36 lg:top-32 m-4 bg-background-light p-4 rounded-lg border-2 border-border flex flex-col items-center lg:items-start lg:flex-row gap-x-8 gap-y-2 shadow-md ">

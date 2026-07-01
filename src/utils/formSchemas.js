@@ -19,7 +19,7 @@ export const propertySchema = z.object({
     gvamx: z.boolean().optional(),
     zonaprop: z.boolean().optional(),
     argenprop: z.boolean().optional(),
-    images: z.array(z.string().or(z.null())),
+    images: z.array(z.any()),
     units: z.array(z.object({
         unitNumber: zodStringPipe(z.string().or(z.null())),
         floor: zodNumberInputPipe(z.string().or(z.null()).or(z.number())),
@@ -31,7 +31,7 @@ export const propertySchema = z.object({
         garages:  zodNumberInputPipe(z.string().or(z.null()).or(z.number())),
         status: zodStringPipe(z.string().or(z.null())),
         rentalPrice:zodNumberInputPipe(z.string().or(z.null()).or(z.number())),
-        images: z.array(z.string().or(z.null())),
+        images: z.array(z.any()),
     })),
 })
 

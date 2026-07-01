@@ -3,8 +3,11 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useCreateTenantMutation } from "../../services/api/tenantApi";
 import { useGetPropertiesQuery } from "../../services/api/propertyApi";
-import DatePicker from "react-datepicker";
+import DatePicker, { registerLocale } from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import es from "date-fns/locale/es";
+
+registerLocale("es", es);
 
 const TenantCreationForm = () => {
   const navigate = useNavigate();

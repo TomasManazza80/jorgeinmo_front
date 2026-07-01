@@ -31,11 +31,40 @@ export const propertyApi = authApi.injectEndpoints({
 
                         toast({
                             title: "Success",
-                            description: "Property created successfully, your units are: " + unitShortCodes.join(", "),
+                            description: "Property created successfully, your units are: " + (unitShortCodes ? unitShortCodes.join(", ") : ""),
                             variant: "success",
                         });
                     })
                     .catch((error) => {
+                        toast({
+                            title: "Uh oh! Something went wrong.",
+                            description: "There was a problem with your request.",
+                            variant: "error",
+                        });
+                    })
+            },
+            invalidatesTags: ['Properties','Units'],
+        }),
+        updateProperty: build.mutation({
+            query: ({ id, ...body }) => ({
+                url: `/properties/${id}`,
+                method: 'PATCH',
+                body,
+            }),
+            async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+                toast({
+                    title: "Updating Property...",
+                    variant: "loading",
+                })
+                queryFulfilled
+                    .then(() => {
+                        toast({
+                            title: "Success",
+                            description: "Property updated successfully",
+                            variant: "success",
+                        });
+                    })
+                    .catch(() => {
                         toast({
                             title: "Uh oh! Something went wrong.",
                             description: "There was a problem with your request.",
@@ -88,6 +117,7 @@ export const propertyApi = authApi.injectEndpoints({
 export const {
     useGetPropertiesQuery,
     useCreatePropertyMutation,
+    useUpdatePropertyMutation,
     useGetPropertyQuery,
     useDeletePropertyMutation,
 } = propertyApi;

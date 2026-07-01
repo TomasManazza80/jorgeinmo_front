@@ -18,9 +18,14 @@ const PropertyDetail = (props) => {
                 <h1>
                     {data?.data?.title}
                 </h1>
-                <Button variant="destructive" isLoading={isDeleting} onClick={() => deleteProperty(id).then(()=> navigate('/properties')) }>
-                    Eliminar Propiedad
-                </Button>
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => navigate(`/properties/edit/${id}`)}>
+                        Editar Propiedad
+                    </Button>
+                    <Button variant="destructive" isLoading={isDeleting} onClick={() => deleteProperty(id).then(()=> navigate('/properties')) }>
+                        Eliminar Propiedad
+                    </Button>
+                </div>
             </div>
 
             La tabla a continuación muestra los datos de la propiedad de la base de datos. <br/>
