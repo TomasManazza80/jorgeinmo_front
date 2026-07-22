@@ -33,7 +33,7 @@ import {
     DialogTrigger
 } from "../../components/ui/dialog.tsx";
 import UnitCreationTable from "../../components/properties/UnitCreationTable.js";
-import {useCreatePropertyMutation} from "../../services/api/propertyApi.js";
+import {useCreatePropertyMutation, useUpdatePropertyMutation, useGetPropertyQuery} from "../../services/api/propertyApi.js";
 import {useNavigate, useParams} from "react-router-dom";
 import {Progress} from "../../components/ui/multi-step.js";
 import {toast} from "sonner";
